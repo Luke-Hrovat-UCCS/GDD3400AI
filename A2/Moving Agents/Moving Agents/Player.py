@@ -37,10 +37,8 @@ class Player:
         #draw self
         pygame.draw.rect(screen, self.color, pygame.Rect(self.__pos.a, self.__pos.b, self.size, self.size))
         #draw line
-        lstart = (self.center.a, self.center.b)
-        direction = self.center
-        direction.__add__(self.__velo.scale(self.size))
-        lend = (direction.a,direction.b)
+        lstart = (self.center[0], self.center[1])
+        lend = (self.center[0] + self.__velo.scale(self.size).a, self.center[1]+self.__velo.scale(self.size).b)
         pygame.draw.line(screen, (0,0,255), lstart, lend,3)
         
     #updates position of player, chases enemies based on distance (closest),accepts a list of enemies
@@ -55,7 +53,7 @@ class Player:
             #for each enemy in enemies
             for enemy in enemies:
                 #calculate distance
-                d= ((enemy.center.a-self.center.a)**2+(enemy.center.b-self.center.b)**2)**.5
+                d= ((enemy.center[0]-self.center[0])**2+(enemy.center[1]-self.center[1])**2)**.5
                 #if distance is smaller than previous option set new potential target
                 if d <= enemyDist:
                     enemyDist = d
@@ -63,19 +61,20 @@ class Player:
             #update target with closest enemy
             self.target = potentialTarg
         #if target exists chase target
-        else:
+        elif (self.target != None) :
             #calculate directon, and normalize
-            enemyDirect = self.target.center
-            enemyDirect.__sub__(self.center)
-            self.velo = enemyDirect
-            nVelo = self.__velo.normalize()
+            nVelo = Vector.Vector(self.target.center[0],self.target.center[1])
+            nVelo.__sub__(self.__pos)
+            self.__velo = nVelo.normalize()
         
             #update position
-            self.__pos.__add__(nVelo.scale(Constants.PLAYER_SPEED))
+            self.__pos.__add__(self.__velo.scale(Constants.PLAYER_SPEED))
+        #update center
+        self.center = Player.calcCenter(self)
                 
     #compute the center of the Player object based on its position and size
     def calcCenter(self):
-        cent = Vector.Vector(self.__pos.a + (self.size/2),self.__pos.b + (self.size/2))
+        cent = (self.__pos.a + (self.size/2),self.__pos.b + (self.size/2))
         return cent
 
 
