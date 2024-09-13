@@ -1,15 +1,16 @@
 import Constants
 import Vector
 import pygame
+import random
 
 class Enemy:
     #constructor that accepts a position, velocity, color, and size and initializes data members to represent those quantities
     def __init__(self,size=None,__pos=None,__velo=None,color=None):
         #default constructor
         if(__pos is None):
-            __pos = Vector.Vector(Constants.PLAYER_STARTING_POS[0],Constants.PLAYER_STARTING_POS[1])
+            __pos = Vector.Vector(random.randrange(0,Constants.WORLD_WIDTH),random.randrange(0,Constants.WORLD_HEIGHT))
         if(__velo is None):
-            __velo = Vector.Vector(0,0)
+            __velo = Vector.Vector(random.randrange(0,Constants.WORLD_WIDTH),random.randrange(0,Constants.WORLD_HEIGHT))
         if(size is None):
             size = Constants.ENEMY_SIZE
         if(color is None):
@@ -18,9 +19,9 @@ class Enemy:
         #"private" Python doesn't have anything that specifically locks something up, but you can do this to make it sort of private
         self.__pos = __pos
         self.__velo = __velo
-        
         self.size = size
         self.color = color
+        
         self.center = Enemy.calcCenter(self)
 
         
@@ -41,37 +42,7 @@ class Enemy:
         direction.__add__(self.__velo.scale(self.size))
         lend = (direction.a,direction.b)
         pygame.draw.line(screen, (0,0,255), lstart, lend,3)
-    '''    
-    #updates position of player, chases enemies based on distance (closest),accepts a list of enemies
-    def update(self,enemies):
-        #catch case where no enemies exist
-        if(enemies == []):
-            return
-        #if no target exists find new target
-        if(self.target is None):
-            enemyDist = 10000
-            potentialTarg = None
-            #for each enemy in enemies
-            for enemy in enemies:
-                #calculate distance
-                d= ((enemy.center.a-self.center.a)**2+(enemy.center.b-self.center.b)**2)**.5
-                #if distance is smaller than previous option set new potential target
-                if d <= enemyDist:
-                    enemyDist = d
-                    potentialTarg = enemy
-            #update target with closest enemy
-            self.target = potentialTarg
-        #if target exists chase target
-        else:
-            #calculate directon, and normalize
-            enemyDirect = self.target.center
-            enemyDirect.__sub__(self.center)
-            self.velo = enemyDirect
-            nVelo = self.__velo.normalize()
-        
-            #update position
-            self.__pos.__add__(nVelo.scale(Constants.PLAYER_SPEED))
-         ''' 
+
     #updates position of enemy, Runs from player if player is in range, otherwise wanders, accepts a player object
     def update(self, player):
         #protection for if the player doesn't exist    
@@ -81,8 +52,13 @@ class Enemy:
         #calculate vector from player to enemy
         playerDist = player.center
         playerDist.__sub__(self.center)
+        x=playerDist.a 
+        y=playerDist.b
+        enemyRange= playerDist.length()
+        playerDist.a=x
+        playerDist.b=y
         #if length of that vector is less than the aggro range of the enemy, run away
-        if(playerDist.length < Constants.AGGRO_RANGE):
+        if(enemyRange < Constants.AGGRO_RANGE):
             #set velocity to the player vector and normalize    
             self.__velo = playerDist   
             nVelo = self.__velo.normalize()
@@ -90,7 +66,12 @@ class Enemy:
             #update position
             self.__pos.__add__(nVelo.scale(Constants.ENEMY_SPEED))
         else:
-                
+            #randomly wander a little bit    
+            self.__velo.a +=  random.randrange(-Constants.ENEMY_WANDER_RANGE,Constants.ENEMY_WANDER_RANGE )  
+            nVelo = self.__velo.normalize()
+            
+            #update position
+            self.__pos.__add__(nVelo.scale(Constants.ENEMY_SPEED))
     #compute the center of the enemy object based on its position and size
     def calcCenter(self):
         cent = Vector.Vector(self.__pos.a + (self.size/2),self.__pos.b + (self.size/2))

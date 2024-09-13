@@ -2,6 +2,7 @@
 import pygame
 import Constants
 import Player
+import Enemy
 
 #initialize game and player
 pygame.init()
@@ -9,6 +10,8 @@ screen = pygame.display.set_mode((Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT)
 done = False
 player = Player.Player()
 enemies = []
+enemy = Enemy.Enemy()
+enemies.append(enemy)
 
 clock = pygame.time.Clock()
 while not done:
@@ -21,8 +24,9 @@ while not done:
         
         #update and draw
         player.update(enemies)
+        enemy.update(player)
         player.draw(screen)
-
+        enemy.draw(screen)
         #at the end flip buffers
         pygame.display.flip()
         
