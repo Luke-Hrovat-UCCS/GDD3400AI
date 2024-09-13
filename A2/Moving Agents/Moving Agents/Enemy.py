@@ -2,7 +2,7 @@ import Constants
 import Vector
 import pygame
 
-class Player:
+class Enemy:
     #constructor that accepts a position, velocity, color, and size and initializes data members to represent those quantities
     def __init__(self,size=None,__pos=None,__velo=None,color=None):
         #default constructor
@@ -11,9 +11,9 @@ class Player:
         if(__velo is None):
             __velo = Vector.Vector(0,0)
         if(size is None):
-            size = Constants.PLAYER_SIZE
+            size = Constants.ENEMY_SIZE
         if(color is None):
-            color = Constants.PLAYER_COLOR
+            color = Constants.ENEMY_COLOR
         #initialize data members
         #"private" Python doesn't have anything that specifically locks something up, but you can do this to make it sort of private
         self.__pos = __pos
@@ -21,18 +21,17 @@ class Player:
         
         self.size = size
         self.color = color
-        self.target = None
-        self.center = Player.calcCenter(self)
+        self.center = Enemy.calcCenter(self)
 
         
-    #display the player's size, position, velocity, and center for easy debugging    
+    #display the enemy's size, position, velocity, and center for easy debugging    
     def __str__(self):
         print("Size: ",self.size)
         print("Position: (",self.__pos.a,", ",self.__pos.b,")")
         print("Velocity: (",self.__velo.a,", ",self.__velo.b,")")
         print("Center: (", self.center.a,",",self.center.b,")" )
         
-    #draws Player and a line representing velocity
+    #draws enemy and a line representing velocity
     def draw(self,screen):
         #draw self
         pygame.draw.rect(screen, self.color, pygame.Rect(self.__pos.a, self.__pos.b, self.size, self.size))
@@ -42,7 +41,7 @@ class Player:
         direction.__add__(self.__velo.scale(self.size))
         lend = (direction.a,direction.b)
         pygame.draw.line(screen, (0,0,255), lstart, lend,3)
-        
+    '''    
     #updates position of player, chases enemies based on distance (closest),accepts a list of enemies
     def update(self,enemies):
         #catch case where no enemies exist
@@ -72,11 +71,27 @@ class Player:
         
             #update position
             self.__pos.__add__(nVelo.scale(Constants.PLAYER_SPEED))
+         ''' 
+    #updates position of enemy, Runs from player if player is in range, otherwise wanders, accepts a player object
+    def update(self, player):
+        #protection for if the player doesn't exist    
+        if player is None:
+            return
+        #if player is in range RUN AWAY
+        #calculate vector from player to enemy
+        playerDist = player.center
+        playerDist.__sub__(self.center)
+        #if length of that vector is less than the aggro range of the enemy, run away
+        if(playerDist.length < Constants.AGGRO_RANGE):
+            #set velocity to the player vector and normalize    
+            self.__velo = playerDist   
+            nVelo = self.__velo.normalize()
+            
+            #update position
+            self.__pos.__add__(nVelo.scale(Constants.ENEMY_SPEED))
+        else:
                 
-    #compute the center of the Player object based on its position and size
+    #compute the center of the enemy object based on its position and size
     def calcCenter(self):
         cent = Vector.Vector(self.__pos.a + (self.size/2),self.__pos.b + (self.size/2))
         return cent
-
-
-
