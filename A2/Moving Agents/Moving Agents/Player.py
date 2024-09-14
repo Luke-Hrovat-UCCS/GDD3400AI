@@ -23,6 +23,14 @@ class Player(Agent):
         self.target = None
         super().__init__(size,__pos,__velo,color)
         
+     #draws Agent and a line representing velocity
+    def draw(self,screen):
+        #draw self
+        pygame.draw.rect(screen, self.color, pygame.Rect(self.__pos.a, self.__pos.b, self.size, self.size))
+        #draw line
+        lstart = (self.center[0], self.center[1])
+        lend = (self.center[0] + self.__velo.scale(self.size).a, self.center[1]+self.__velo.scale(self.size).b)
+        pygame.draw.line(screen, (0,0,255), lstart, lend,3)  
     #updates position of player, chases enemies based on distance (closest),accepts a list of enemies
     def update(self,enemies):
         #catch case where no enemies exist
