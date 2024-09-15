@@ -21,18 +21,24 @@ class Player(Agent):
         self.size = size
         self.color = color
         self.target = None
+        self.oldTargets = []
+        self.rect = pygame.Rect(self.__pos.a, self.__pos.b, self.size, self.size)
         super().__init__(size,__pos,__velo,color)
-        
-     #draws Agent and a line representing velocity
+    
+    #draws Agent and a line representing velocity
     def draw(self,screen):
         #draw self
-        pygame.draw.rect(screen, self.color, pygame.Rect(self.__pos.a, self.__pos.b, self.size, self.size))
+        pygame.draw.rect(screen, self.color, self.rect)
         #draw line
         lstart = (self.center[0], self.center[1])
         lend = (self.center[0] + self.__velo.scale(self.size).a, self.center[1]+self.__velo.scale(self.size).b)
-        pygame.draw.line(screen, (0,0,255), lstart, lend,3)  
+        pygame.draw.line(screen, (0,0,255), lstart, lend,3)
+        if self.target is not None:
+            pygame.draw.line(screen, (255,0,0), self.center, self.target.center,3)
+    
     #updates position of player, chases enemies based on distance (closest),accepts a list of enemies
     def update(self,enemies):
+        self.rect = pygame.Rect(self.__pos.a, self.__pos.b, self.size, self.size)
         #catch case where no enemies exist
         if(enemies == []):
             return
@@ -45,11 +51,11 @@ class Player(Agent):
                 #calculate distance
                 d= ((enemy.center[0]-self.center[0])**2+(enemy.center[1]-self.center[1])**2)**.5
                 #if distance is smaller than previous option set new potential target
-                if d <= enemyDist:
+                if d <= enemyDist and enemy not in self.oldTargets:
                     enemyDist = d
                     potentialTarg = enemy
             #update target with closest enemy
-            self.target = potentialTarg
+            self.target = potentialTarg             
         #if target exists chase target
         elif (self.target != None) :
             #calculate directon, and normalize
@@ -59,8 +65,15 @@ class Player(Agent):
         
             #update position
             self.__pos.__add__(self.__velo.scale(Constants.PLAYER_SPEED))
+            if pygame.Rect.colliderect(self.rect, self.target.rect):
+                if self.oldTargets.__len__() == Constants.ENEMY_NUMBERS-1:
+                    self.oldTargets = []
+                self.oldTargets.append(self.target)
+                self.target = None
         #update center
         self.center = Agent.calcCenter(self)
+        #clamp player to screen
+        self.rect = self.rect.clamp(Constants.BOUNDARY_RECT)
 
 
 

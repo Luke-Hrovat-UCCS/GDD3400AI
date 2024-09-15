@@ -33,6 +33,8 @@ class Agent(object):
 
         #updates position of player, chases enemies based on distance (closest),accepts a list of enemies
     def update(self,enemies):
+       #clamp agent to screen
+       self.rect = self.rect.clamp(Constants.BOUNDARY_RECT)
        return
         
     #compute the center of the enemy object based on its position and size
