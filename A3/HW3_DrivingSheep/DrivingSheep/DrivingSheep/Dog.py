@@ -2,16 +2,17 @@ import pygame
 import Vector
 import Agent
 import random
+import Constants
 
 from Vector import Vector
 from Agent import *
 
 isPlayer = False
 
-class Hunter(Agent):
+class Dog(Agent):
 
-	def __init__(self, position, size, speed, color):
-		super().__init__(position, size, speed, color)
+	def __init__(self, position, size, speed, color, image):
+		super().__init__(position, size, speed, color, image)
 		self.targetEnemy = None
 
 	def update(self, deltaTime, bounds, enemies):
@@ -39,7 +40,8 @@ class Hunter(Agent):
 				self.targetEnemy = self.enemies[random.randrange(0, len(self.enemies))]
 			
 			# Set our velocity to chase the enemy we've targetted
-			super().setVelocity(self.targetEnemy.position - self.position)
+			super().setDirection(self.targetEnemy.position - self.position)
+			super().calcAppliedForce(Constants.PLAYER_WEIGHT,deltaTime,Constants.PLAYER_SPEED)
 
 		# Set the velocity and update position
 		super().update(deltaTime, bounds)

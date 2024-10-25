@@ -8,7 +8,7 @@ from pygame import *
 from Vector import Vector
 from Agent import *
 
-class Enemy(Agent):
+class Sheep(Agent):
 	def __init__(self, position, size, speed, color):
 		super().__init__(position, size, speed, color)
 		self.player = 0
